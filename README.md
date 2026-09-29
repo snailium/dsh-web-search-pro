@@ -8,18 +8,16 @@
 
 | 插件发布通道 | DSH 基线 | 兼容承诺 |
 |---|---|---|
-| npm `latest`（当前正式发布插件） | `dsh-v0.1.1-rc.2` | 已验证维护基线 |
-| npm `next` 候选（`0.1.13-alpha.2`） | `dsh-v0.1.5-alpha.1` | 精确依赖与真实 profile 验收目标 |
-| 后续 DSH 正式版 | 尚未发布 | 发布并完成真实 profile 门禁后再声明兼容 |
+| `0.1.11` 及更早的维护版本 | `dsh-v0.1.1-rc.2` | 旧基线；不与新插件混装 |
+| `0.1.15` | `dsh-v0.1.7-rc.2` + Browser `0.1.15` | 精确锁定此宿主版本；组合安装、真实 Web profile 与设置持久化已验证 |
 
-开发版不会覆盖 npm `latest`。`0.1.5-alpha.1` 依赖按精确版本锁定；该版本已移除
-`@deepseek-ai/dsh-client-runtime`，客户端契约分别迁移到 Cordis、
-`dsh-client-store` 与 `dsh-client-ui-settings`，不会混装 rc.2 运行时。
+`0.1.15` 的 DSH 运行时依赖精确锁定 `0.1.7-rc.2`，
+客户端配置改走 `configForms` 和插件 bundle 的专属配置槽位。
 
 ## 安装
 
 ```bash
-dsh plugin --profile web add @anweat/dsh-browser@^0.1.8 dsh-web-search-pro@^0.1.8
+dsh plugin --profile web add @anweat/dsh-browser@0.1.15 dsh-web-search-pro@0.1.15
 # 或本地目录 / tarball：
 dsh plugin --profile web add ../dsh-browser ./dsh-web-search-pro
 # 重启（web profile 关闭了 HMR）：
@@ -27,28 +25,24 @@ dsh --profile web
 ```
 
 > 两个插件都必须是 profile 的直接依赖：DSH 只激活直接依赖的 bundle layer，且标准 profile 可能设置 `autoInstallPeers: false`。不要只安装 Web Search Pro 后依赖 peer 自动补齐。
-> 安装 npm `latest` 时使用 `dsh-v0.1.1-rc.2`；测试本开发分支时使用
-> `dsh-v0.1.5-alpha.1`。若你的 harness 是本地源码 checkout，版本号可能有出入——用
+> pnpm 11 若拦截 Browser 的 OpenCLI 依赖安装脚本，会要求在 profile 的 `pnpm-workspace.yaml` 中明确决定 `allowBuilds: { '@jackwener/opencli': false }`（或在确实需要安装期下载 adapter 时自行审核后设为 `true`），再重试安装；隔离 profile 中禁用脚本后，已发布 Browser 的 OpenCLI 入口仍可运行。
+> 本版仅支持 `dsh-v0.1.7-rc.2` 与 Browser `0.1.15`，不能混用仍声明旧 DSH peer 的 Browser `0.1.15-alpha.2`。若你的 harness 是本地源码 checkout，版本号可能有出入——用
 > `dsh plugin --profile web add ./<path>` 并在 profile 的 `pnpm-workspace.yaml`
 > 里对齐版本后重装即可。
 
 ## 从旧版本升级
 
-升级 Web Search Pro 时应同时升级浏览器插件。`dsh-web-search-pro >= 0.1.8` 要求 `@anweat/dsh-browser >= 0.1.8`；旧版 browser 不包含 `web_snapshot screenshot=false`、Web Search Pro 写操作的四级审批策略等本版契约。
+升级 Web Search Pro 时应同时升级浏览器插件；两者都需要作为 profile 的直接依赖。
 
 ```bash
-# npm 安装：显式升级两个包，避免 profile 锁文件继续保留旧版 browser
-dsh plugin --profile web add @anweat/dsh-browser@^0.1.8 dsh-web-search-pro@^0.1.8
-
-# 本地 checkout 联调：两个目录一起重新挂载
-dsh plugin --profile web add ../dsh-browser ../dsh-web-search-pro
+dsh plugin --profile web add @anweat/dsh-browser@0.1.15 dsh-web-search-pro@0.1.15
 ```
 
 升级完成后需要**完整停止并重新启动 Web profile**；仅刷新网页不会重新扫描插件的 `client.js`。随后依次检查：
 
 1. `browser_status`：确认 OpenCLI、`playwright | patchright` 运行时、`automationMode` 与 `usagePolicy` 符合预期。
 2. `web_backend_status`：确认搜索、CLI、Agent Reach 与浏览器后端是否 ready。
-3. 打开 `设置 → 插件 → 插件配置`：确认“Web Search Pro”和“浏览器自动化”两张卡片都已加载；后者负责自由度、运行时、OpenCLI 与调用缓冲。
+3. 打开 `插件 → 已安装` 中两个 bundle 各自的详情页，确认配置表单都已加载；浏览器表单负责自由度、运行时、OpenCLI 与调用缓冲。
 
 > `automationMode` 和防止过度调用的 `usagePolicy` 都属于 dsh-browser，升级不会自动改写现有配置。生产 profile 建议保留 `standard`；`unrestricted` 只用于隔离的自动化测试 profile，并且仍受并发、突发、页数/深度和 429/503 退避保护。
 

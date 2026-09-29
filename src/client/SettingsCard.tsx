@@ -6,7 +6,9 @@ import { styles as css } from './styles.ts'
 export function SettingsCard(props: SettingsCardProps) {
   const { t } = props
   const state = props.useWebSearchPro(snapshot => snapshot)
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(true)
+
+  if (props.view === 'summary') return t('description')
 
   if (!state.available) return null
   const disabled = !state.writable || state.saving
@@ -21,7 +23,7 @@ export function SettingsCard(props: SettingsCardProps) {
   )
 
   return (
-    <li className={`${css.card} ${open ? css.cardOpen : ''}`} data-web-search-pro-settings>
+    <div className={`${css.card} ${open ? css.cardOpen : ''}`} data-web-search-pro-settings>
       <button
         type="button"
         className={css.header}
@@ -121,6 +123,6 @@ export function SettingsCard(props: SettingsCardProps) {
           </div>
         </div>
       ) : null}
-    </li>
+    </div>
   )
 }

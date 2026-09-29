@@ -5,6 +5,7 @@ export declare const name = "web-search-pro-client";
 export declare const inject: string[];
 export declare const NS = "web-search-pro.card";
 export type SettingsCardProps = PropsLocale<typeof NS> & {
+    view: 'summary' | 'page';
     useWebSearchPro: <R>(selector: (snapshot: WebSearchCardState) => R) => R;
     edit: (field: SettingField, text: string) => void;
     resetField: (field: SettingField) => void;

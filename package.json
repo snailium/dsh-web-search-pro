@@ -1,6 +1,6 @@
 {
   "name": "dsh-web-search-pro",
-  "version": "0.1.15-alpha.1",
+  "version": "0.1.15",
   "description": "Enhanced, persistent web search plugin for DeepSeek Harness — multi-engine routing (DeepSeek/Exa/DDG/Bing/Jina + GitHub/B站/YouTube/V2EX/小红书/Twitter/Reddit/RSS), SQLite+LRU cache, userscript-style extraction, and Playwright rendering.",
   "license": "MIT",
   "type": "module",
@@ -39,18 +39,18 @@
     "prepare": "pnpm run build"
   },
   "peerDependencies": {
-    "@anweat/dsh-browser": ">=0.1.8 <0.2.0",
-    "@deepseek-ai/cordis": "^4.0.2",
-    "@deepseek-ai/dsh-api-remotes": ">=0.1.5-alpha.1",
-    "@deepseek-ai/dsh-client-locale": ">=0.1.5-alpha.1",
-    "@deepseek-ai/dsh-client-store": ">=0.1.5-alpha.1",
-    "@deepseek-ai/dsh-client-ui-renderer": ">=0.1.5-alpha.1",
-    "@deepseek-ai/dsh-client-ui-settings": ">=0.1.5-alpha.1",
-    "@deepseek-ai/dsh-client-ui-settings-plugins": ">=0.1.5-alpha.1",
-    "@deepseek-ai/dsh-client-ui-slots": ">=0.1.5-alpha.1",
-    "@deepseek-ai/dsh-credentials": ">=0.1.5-alpha.1",
-    "@deepseek-ai/dsh-settings": ">=0.1.5-alpha.1",
-    "@deepseek-ai/dsh-tools": ">=0.1.5-alpha.1",
+    "@anweat/dsh-browser": "0.1.15",
+    "@deepseek-ai/cordis": "4.0.4",
+    "@deepseek-ai/dsh-api-remotes": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-client-locale": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-client-store": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-client-ui-renderer": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-client-ui-settings": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-client-ui-plugin-manager": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-client-ui-slots": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-credentials": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-settings": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-tools": "0.1.7-rc.2",
     "@deepseek-ai/schemastery": "^3.18.2"
   },
   "peerDependenciesMeta": {
@@ -72,9 +72,7 @@
     "@deepseek-ai/dsh-client-ui-settings": {
       "optional": true
     },
-    "@deepseek-ai/dsh-client-ui-settings-plugins": {
-      "optional": true
-    },
+    "@deepseek-ai/dsh-client-ui-plugin-manager": { "optional": true },
     "@deepseek-ai/dsh-client-ui-slots": {
       "optional": true
     },
@@ -100,19 +98,27 @@
     "node-html-parser": "^9.0.4"
   },
   "devDependencies": {
-    "@anweat/dsh-browser": "^0.1.12",
+    "@anweat/dsh-browser": "0.1.15",
     "@deepseek-ai/cordis": "^4.0.4",
+    "@deepseek-ai/cordis-plugin-group": "1.0.4",
+    "@deepseek-ai/cordis-plugin-include": "1.0.9",
     "@deepseek-ai/cosmokit": "~1.8.5",
     "@deepseek-ai/dsh-agent": "0.1.7-rc.2",
     "@deepseek-ai/dsh-api-remotes": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-app-boot": "0.1.7-rc.2",
     "@deepseek-ai/dsh-client-locale": "0.1.7-rc.2",
     "@deepseek-ai/dsh-client-store": "0.1.7-rc.2",
     "@deepseek-ai/dsh-client-ui-renderer": "0.1.7-rc.2",
     "@deepseek-ai/dsh-client-ui-settings": "0.1.7-rc.2",
-    "@deepseek-ai/dsh-client-ui-settings-plugins": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-client-ui-plugin-manager": "0.1.7-rc.2",
     "@deepseek-ai/dsh-client-ui-slots": "0.1.7-rc.2",
     "@deepseek-ai/dsh-credentials": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-home-paths": "0.1.7-rc.2",
     "@deepseek-ai/dsh-invariants": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-launch-environment": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-ptc-runtime": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-sandbox": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-sandbox-policy": "0.1.7-rc.2",
     "@deepseek-ai/dsh-scope": "0.1.7-rc.2",
     "@deepseek-ai/dsh-session-projection": "0.1.7-rc.2",
     "@deepseek-ai/dsh-settings": "0.1.7-rc.2",
@@ -137,7 +143,7 @@
         "@deepseek-ai/dsh-client-locale",
         "@deepseek-ai/dsh-client-ui-renderer",
         "@deepseek-ai/dsh-client-ui-settings",
-        "@deepseek-ai/dsh-client-ui-settings-plugins"
+        "@deepseek-ai/dsh-client-ui-plugin-manager"
       ],
       "platform": "web"
     },

@@ -88,8 +88,8 @@ jobs:
           echo "dist_tag=$dist_tag" >> "$GITHUB_OUTPUT"
           echo "PKG_VERSION=$pkg_version" >> "$GITHUB_ENV"
 
-      - name: Build
-        run: pnpm build
+      - name: Verify release candidate
+        run: pnpm verify
 
       - name: Pack tarball
         run: pnpm pack --pack-destination dist
@@ -136,7 +136,7 @@ jobs:
   release:
     name: GitHub Release with tarball
     if: github.event_name == 'push'   # v* tag pushes only
-    needs: pack
+    needs: [pack, publish]
     runs-on: ubuntu-24.04
     permissions:
       contents: write

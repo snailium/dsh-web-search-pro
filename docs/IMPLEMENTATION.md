@@ -64,7 +64,7 @@ web_search_pro / web_platform_search
 
 ## 4. 关键设计决策
 
-1. **零本地依赖**：全部使用仓库已有包（js-yaml/jsdom 在仓库根 node_modules）或 Node 内置（node:sqlite、fetch、crypto）+ 全局 npm（playwright）+ 系统 CLI（gh/bili/yt-dlp/opencli）。插件自身不需要 pnpm install。
+1. **历史说明（2026-08）**：本节记录早期源码内嵌部署，不适用于 npm `0.1.15`；当前包自带 `js-yaml` 与 `node-html-parser`，并通过 Browser 插件取得 Playwright/OpenCLI 服务。现行安装与兼容边界见根目录 README。
 2. **模块解析**：插件位于仓库内任意路径均可 `import '@deepseek-ai/*'`（tsx 的 tsconfig paths 解析基于**服务器 cwd=仓库根**，与文件位置无关，且与服务器共享同一源码级模块实例）。非 @deepseek-ai 依赖用 createRequire 锚定绝对路径。
 3. **持久化位置**：`$DSH_HOME/data/web-search-pro/store.db`（可配置 dbPath），WAL 模式。
 4. **缓存语义**：查询缓存键 = (engine, 规范化 query)，TTL 内命中直接复用（`fromCache` 标记）；fetch 页面快照按 URL 去重。`fresh: true` 强制穿透。
@@ -145,13 +145,8 @@ web-search-pro:
 
 ## 7.2 关于"前端可视化配置"（结论与路径）
 
-- **现状**：没有 GUI 表单。配置 = ①/②/③ 三通道，②是最接近"可视化"的日常通道（改文件即生效）。
-- **DSH 原生的 GUI 表单机制**（仓库已具备）：client 插件（`packages/client/**`，`dsh.client` manifest + tsdown client 构建）在
-  `settings.plugins.tab` 的 `settings.plugin.item` 插槽注册配置卡片；卡片读写走 settings RPC（Models 页同款通道）。
-  钥匙字段已标 `role('secret')`，前端可密文回显。
-- **要做 GUI 表单需要**：① 在 `packages/client/` 新增一个 client 包（含 React 配置卡 + dsh.client manifest）；
-  ② 在 `packages/client/tsdown.client.ts` 注册构建入口并跑 `pnpm run dev:web`/build:web；③ cordis.yml 增加 client 行。
-  这是"仓库内开发"路径（client 包必须在仓库内构建），已列入 Roadmap；当前 settings.yaml 通道可先行满足"填 key"需求。
+- **当前 rc.2 工作分支**：插件自带 Client bundle，在 `plugins.bundle.config` 以包名为键注册配置页；`ctx.configForms.get('web-search-pro')` 读写 Host 提供的表单。密钥字面值经 credentials Remote 单独写入，不经设置表单回显。
+- **验证边界**：类型检查、构建与单测已覆盖该契约；真实 profile 中的页面显示和写入仍须单独验收。
 
 ## 7.3 第二阶段能力（RRF + LRU + web_deps + 设置卡）
 

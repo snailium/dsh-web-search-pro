@@ -91,16 +91,16 @@ export interface Config {
     verbose: boolean;
 }
 export declare const Config: z<Schemastery.ObjectS<NoInfer<{
-    dbPath: z<string, string, "plain">;
+    dbPath: z<string, string, "volatile">;
     ttlSeconds: z<number, number, "volatile-defined">;
-    memoryCacheEntries: z<number, number, "defined">;
+    memoryCacheEntries: z<number, number, "volatile-defined">;
     rrfConstant: z<number, number, "volatile-defined">;
     freshnessBoost: z<number, number, "volatile-defined">;
     freshnessDays: z<number, number, "volatile-defined">;
     authorityBoost: z<number, number, "volatile-defined">;
     authorityDomains: z<NoInfer<string[]>, NoInfer<string[]>, "volatile-defined">;
     searchMaxResults: z<number, number, "volatile-defined">;
-    timeoutMs: z<number, number, "defined">;
+    timeoutMs: z<number, number, "volatile-defined">;
     allowProxyFakeIp: z<boolean, boolean, "volatile-defined">;
     engines: z<NoInfer<string[]>, NoInfer<string[]>, "volatile-defined">;
     parallelEngines: z<boolean, boolean, "volatile-defined">;
@@ -113,8 +113,8 @@ export declare const Config: z<Schemastery.ObjectS<NoInfer<{
     enableCliBackends: z<boolean, boolean, "volatile-defined">;
     opencliEnabled: z<boolean, boolean, "volatile-defined">;
     agentReachEnabled: z<boolean, boolean, "volatile-defined">;
-    providerId: z<string, string, "defined">;
-    registerProvider: z<boolean, boolean, "defined">;
+    providerId: z<string, string, "volatile-defined">;
+    registerProvider: z<boolean, boolean, "volatile-defined">;
     platformRules: z<NoInfer<import("@deepseek-ai/cosmokit").Dict<{
         item?: string | null | undefined;
         title?: string | null | undefined;
@@ -157,18 +157,18 @@ export declare const Config: z<Schemastery.ObjectS<NoInfer<{
         enabled: z<boolean, boolean, "volatile-defined">;
         snapshotDir: z<string, string, "plain">;
     }>>, "plain">;
-    verbose: z<boolean, boolean, "defined">;
+    verbose: z<boolean, boolean, "volatile-defined">;
 }>>, Schemastery.ObjectT<NoInfer<{
-    dbPath: z<string, string, "plain">;
+    dbPath: z<string, string, "volatile">;
     ttlSeconds: z<number, number, "volatile-defined">;
-    memoryCacheEntries: z<number, number, "defined">;
+    memoryCacheEntries: z<number, number, "volatile-defined">;
     rrfConstant: z<number, number, "volatile-defined">;
     freshnessBoost: z<number, number, "volatile-defined">;
     freshnessDays: z<number, number, "volatile-defined">;
     authorityBoost: z<number, number, "volatile-defined">;
     authorityDomains: z<NoInfer<string[]>, NoInfer<string[]>, "volatile-defined">;
     searchMaxResults: z<number, number, "volatile-defined">;
-    timeoutMs: z<number, number, "defined">;
+    timeoutMs: z<number, number, "volatile-defined">;
     allowProxyFakeIp: z<boolean, boolean, "volatile-defined">;
     engines: z<NoInfer<string[]>, NoInfer<string[]>, "volatile-defined">;
     parallelEngines: z<boolean, boolean, "volatile-defined">;
@@ -181,8 +181,8 @@ export declare const Config: z<Schemastery.ObjectS<NoInfer<{
     enableCliBackends: z<boolean, boolean, "volatile-defined">;
     opencliEnabled: z<boolean, boolean, "volatile-defined">;
     agentReachEnabled: z<boolean, boolean, "volatile-defined">;
-    providerId: z<string, string, "defined">;
-    registerProvider: z<boolean, boolean, "defined">;
+    providerId: z<string, string, "volatile-defined">;
+    registerProvider: z<boolean, boolean, "volatile-defined">;
     platformRules: z<NoInfer<import("@deepseek-ai/cosmokit").Dict<{
         item?: string | null | undefined;
         title?: string | null | undefined;
@@ -225,7 +225,7 @@ export declare const Config: z<Schemastery.ObjectS<NoInfer<{
         enabled: z<boolean, boolean, "volatile-defined">;
         snapshotDir: z<string, string, "plain">;
     }>>, "plain">;
-    verbose: z<boolean, boolean, "defined">;
+    verbose: z<boolean, boolean, "volatile-defined">;
 }>>, "plain">;
 export interface ResolvedConfig extends Config {
     dbPath: string;

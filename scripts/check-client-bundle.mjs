@@ -11,10 +11,9 @@ const allowed = new Set([
 const forbidden = [...new Set(imports.filter(id => !allowed.has(id)))].sort()
 
 assert.deepEqual(forbidden, [], `client bundle contains unavailable imports: ${forbidden.join(', ')}`)
-assert.match(source, /settings\.plugin\.item/)
+assert.match(source, /plugins\.bundle\.config/)
 assert.match(source, /web-search-pro/)
-assert.match(source, /key:\s*["']web-search-pro["']/)
-assert.match(source, /id:\s*["']web-search-pro["']/)
+assert.match(source, /key:\s*["']dsh-web-search-pro["']/)
 assert.match(source, /Web Search Pro/)
 assert.equal('sourcesContent' in sourceMap, false, 'client source map must exclude platform-dependent source contents')
 console.log(`client bundle check passed (${[...new Set(imports)].length} module-table imports)`)

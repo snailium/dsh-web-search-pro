@@ -136,3 +136,7 @@ export function apply(ctx: Context, config: Config): void {
 
   ctx.logger?.(name).info('web-search-pro loaded: db=' + dbPath + ' engines=[' + resolved.engines.join(',') + ']')
 }
+
+// The loader unwraps `default` before reading Config. A named export alone
+// leaves the rc.2 entry without a schema-derived configuration form.
+export default { name, inject, Config, apply }

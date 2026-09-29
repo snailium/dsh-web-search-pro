@@ -16,6 +16,7 @@ export const inject = ['slots', 'locale', 'remote', 'remote.credentials', 'confi
 export const NS = 'web-search-pro.card'
 
 export type SettingsCardProps = PropsLocale<typeof NS> & {
+  view: 'summary' | 'page'
   useWebSearchPro: <R>(selector: (snapshot: WebSearchCardState) => R) => R
   edit: (field: SettingField, text: string) => void
   resetField: (field: SettingField) => void
@@ -32,34 +33,13 @@ export function apply(ctx: Context): void {
   const controller = new WebSearchSettingsController(form, ctx)
   ctx.effect(() => () => { controller.dispose() }, 'web-search-pro: settings controller')
 
-  // The label thunk re-reads the active locale on every shell render, so no
-  // re-registration is needed when the user switches languages.
-  ctx.slots.inject('settings.plugins.tab', () => {
-    const options = {
-      name: 'settings.plugins.tab' as const,
-      id: 'web-search-pro',
-      order: 10,
-      label: () => (ctx.locale.getLocale().active === 'en' ? en.tab : zh.tab),
+  // External bundles contribute configuration to their own Plugins detail
+  // page, and only while the Host serves this entry's Config schema.
+  ctx.effect(() => ctx.configForms.whileServed(['web-search-pro'], () =>
+    ctx.slots.inject('plugins.bundle.config', () => ctx.slots.register({
+      name: 'plugins.bundle.config',
+      key: 'dsh-web-search-pro',
       locale: NS,
       inject: () => controller.inject(),
-    } as const
-    return ctx.slots.register(options, SettingsCard)
-  })
-
-  // Legacy Hosts (pre-0.1.7) expose the settings.plugin.item seat; register
-  // there too so the card renders on both generations. The cast bypasses the
-  // 0.1.7 SlotMap, which no longer declares that key.
-  const legacySlots = ctx.slots as unknown as {
-    inject: (name: string, fn: () => unknown) => void
-    register: (options: Record<string, unknown>, component: unknown) => () => void
-  }
-  legacySlots.inject('settings.plugin.item', () => {
-    return legacySlots.register({
-      name: 'settings.plugin.item',
-      key: 'web-search-pro',
-      id: 'web-search-pro',
-      locale: NS,
-      inject: () => controller.inject(),
-    }, SettingsCard)
-  })
+    }, SettingsCard))), 'web-search-pro: bundle configuration')
 }

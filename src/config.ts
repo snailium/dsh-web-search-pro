@@ -102,16 +102,16 @@ export interface Config {
 import type { Volatile } from '@deepseek-ai/cosmokit'
 void ({} as Volatile<unknown>)
 export const Config = z.object({
-  dbPath: z.string(),
+  dbPath: z.string().volatile(),
   ttlSeconds: z.number().default(3600).volatile(),
-  memoryCacheEntries: z.number().default(128),
+  memoryCacheEntries: z.number().default(128).volatile(),
   rrfConstant: z.number().default(60).volatile(),
   freshnessBoost: z.number().default(0.2).volatile(),
   freshnessDays: z.number().default(30).volatile(),
   authorityBoost: z.number().default(0.25).volatile(),
   authorityDomains: z.array(z.string()).default([]).volatile(),
   searchMaxResults: z.number().default(8).volatile(),
-  timeoutMs: z.number().default(30_000),
+  timeoutMs: z.number().default(30_000).volatile(),
   allowProxyFakeIp: z.boolean().default(false).volatile(),
   engines: z.array(z.string()).default(['ddg', 'bing', 'exa', 'seam', 'jina']).volatile(),
   parallelEngines: z.boolean().default(false).volatile(),
@@ -124,8 +124,8 @@ export const Config = z.object({
   enableCliBackends: z.boolean().default(true).volatile(),
   opencliEnabled: z.boolean().default(true).volatile(),
   agentReachEnabled: z.boolean().default(true).volatile(),
-  providerId: z.string().default('web-search-pro'),
-  registerProvider: z.boolean().default(false),
+  providerId: z.string().default('web-search-pro').volatile(),
+  registerProvider: z.boolean().default(false).volatile(),
   platformRules: z.dict(z.object({
     item: z.string(),
     title: z.string(),
@@ -149,7 +149,7 @@ export const Config = z.object({
     enabled: z.boolean().default(true).volatile(),
     snapshotDir: z.string(),
   }),
-  verbose: z.boolean().default(false),
+  verbose: z.boolean().default(false).volatile(),
 })
 
 export interface ResolvedConfig extends Config {
@@ -170,7 +170,8 @@ function v<T>(value: T | { get(): T }): T {
 /** Read a volatile field, defaulting when the field is absent. */
 function vOr<T>(value: T | { get(): T } | undefined, fallback: T): T {
   if (value === undefined || value === null) return fallback
-  return v(value)
+  const current = v(value)
+  return current === undefined || current === null ? fallback : current
 }
 
 /** Default database path under the harness home. */
@@ -182,7 +183,7 @@ export function defaultDbPath(): string {
 /** Resolve a fully-defaulted config from user input. Unwraps volatile fields (schemastery `Volatile<T>`) into plain values so consumers never see the wrapper. */
 export function resolveConfig(config: Config): ResolvedConfig {
   const dbPath = vOr(config.dbPath, defaultDbPath())
-  const pw = config.playwright ?? {}
+  const pw: Partial<Config['playwright']> = config.playwright ?? {}
   const snapshotDir = vOr(pw.snapshotDir, path.join(path.dirname(dbPath), 'snapshots'))
   return {
     ...config,
@@ -195,6 +196,7 @@ export function resolveConfig(config: Config): ResolvedConfig {
     authorityBoost: vOr(config.authorityBoost, 0.25) as number,
     authorityDomains: vOr(config.authorityDomains, [] as string[]) as string[],
     searchMaxResults: vOr(config.searchMaxResults, 8) as number,
+    timeoutMs: vOr(config.timeoutMs, 30_000) as number,
     allowProxyFakeIp: vOr(config.allowProxyFakeIp, false) as boolean,
     engines: vOr(config.engines, ['ddg', 'bing', 'exa', 'seam', 'jina']) as string[],
     parallelEngines: vOr(config.parallelEngines, false) as boolean,
@@ -207,6 +209,8 @@ export function resolveConfig(config: Config): ResolvedConfig {
     enableCliBackends: vOr(config.enableCliBackends, true) as boolean,
     opencliEnabled: vOr(config.opencliEnabled, true) as boolean,
     agentReachEnabled: vOr(config.agentReachEnabled, true) as boolean,
+    providerId: vOr(config.providerId, 'web-search-pro') as string,
+    registerProvider: vOr(config.registerProvider, false) as boolean,
     platformRules: config.platformRules !== undefined ? v(config.platformRules) : undefined,
     customPlatforms: config.customPlatforms !== undefined ? v(config.customPlatforms) : undefined,
     browserBindings: config.browserBindings !== undefined ? v(config.browserBindings) : undefined,
@@ -214,5 +218,6 @@ export function resolveConfig(config: Config): ResolvedConfig {
       enabled: vOr(pw.enabled, true) as boolean,
       snapshotDir,
     },
+    verbose: vOr(config.verbose, false) as boolean,
   }
 }

@@ -8,5 +8,3 @@
 - insert:
     - id: web-search-pro
       name: dsh-web-search-pro
-      config:
-        verbose: false
