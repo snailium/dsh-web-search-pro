@@ -78,6 +78,13 @@ tar --transform 's,^,package/,' -czf "$PLUGIN_TGZ" -C "$PLUGIN_DIR" \
   package.json README.md LOGIN.md LICENSE cordis.patch.yml lib scripts \
   || fail "could not pack the plugin"
 
+step "asserting peer ranges resolve under both semver modes"
+node "$HERE/check-peer-ranges.js" \
+  "$DSH_PREFIX/node_modules/semver" \
+  "$PLUGIN_DIR/package.json" \
+  "$("$DSH_BIN" --version 2>/dev/null | tail -1)" \
+  || fail "peer ranges are not installable on this dsh version"
+
 step "installing the plugin into $PROFILE_DIR"
 cat > "$PROFILE_DIR/package.json" <<JSON
 {
@@ -99,9 +106,16 @@ cat > "$PROFILE_DIR/package.json" <<JSON
   }
 }
 JSON
+# Peer checking stays ON here on purpose. `--legacy-peer-deps` would disable
+# exactly the check that matters here: a peer range that only satisfies dsh's
+# runtime gate (semver includePrerelease:true) can still fail npm's install-time
+# resolution (default semver), and that failure is invisible to a booting
+# profile. The browser bundle is the one exception — it is installed separately
+# below, with its own exemption, because it is not what this harness tests.
 ( cd "$PROFILE_DIR" && npm install --no-audit --no-fund \
-    --legacy-peer-deps --cache "$DSH_PREFIX/npm-cache" --loglevel=error ) \
-  || fail "profile install failed"
+    --cache "$DSH_PREFIX/npm-cache" --loglevel=error ) \
+  || fail "profile install failed — if this is ERESOLVE on a dsh-* peer, the
+       declared peer range does not satisfy npm's resolver for this dsh version"
 
 # The browser service comes from a separate bundle, and the plugin waits for it:
 # without the package installed the entry stays `pending` and none of its tools
