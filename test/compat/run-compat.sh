@@ -78,7 +78,7 @@ tar --transform 's,^,package/,' -czf "$PLUGIN_TGZ" -C "$PLUGIN_DIR" \
   package.json README.md LOGIN.md LICENSE cordis.patch.yml lib scripts \
   || fail "could not pack the plugin"
 
-step "asserting peer ranges resolve under both semver modes"
+step "asserting peer ranges resolve under dsh's runtime gate"
 node "$HERE/check-peer-ranges.js" \
   "$DSH_PREFIX/node_modules/semver" \
   "$PLUGIN_DIR/package.json" \
@@ -106,23 +106,24 @@ cat > "$PROFILE_DIR/package.json" <<JSON
   }
 }
 JSON
-# Peer checking stays ON here on purpose. `--legacy-peer-deps` would disable
-# exactly the check that matters here: a peer range that only satisfies dsh's
-# runtime gate (semver includePrerelease:true) can still fail npm's install-time
-# resolution (default semver), and that failure is invisible to a booting
-# profile. The browser bundle is the one exception — it is installed separately
-# below, with its own exemption, because it is not what this harness tests.
-( cd "$PROFILE_DIR" && npm install --no-audit --no-fund \
-    --cache "$DSH_PREFIX/npm-cache" --loglevel=error ) \
-  || fail "profile install failed — if this is ERESOLVE on a dsh-* peer, the
-       declared peer range does not satisfy npm's resolver for this dsh version"
+# Install the plugin the way dsh itself installs plugins: with pnpm.
+#
+# dsh-plugin-manager shells out to `pnpm add` and, before that, runs
+# `evaluatePluginCompatibility` as a preflight. pnpm does not resolve OPTIONAL
+# peers at all, so the npm resolver's stricter view of these ranges is not the
+# gate a user hits -- and testing with npm would reject peer ranges that dsh
+# installs without complaint. Using npm here would test a path dsh never takes.
+# The dsh runtime gate is asserted separately, by check-peer-ranges.js.
+( cd "$PROFILE_DIR" && pnpm --config.store-dir="$npm_config_store_dir" \
+    add --ignore-scripts "file:$PLUGIN_TGZ" >/dev/null ) \
+  || fail "plugin install failed"
 
 # The browser service comes from a separate bundle, and the plugin waits for it:
 # without the package installed the entry stays `pending` and none of its tools
 # register, so a compat run must install it to observe anything.
 step "installing the browser bundle ($BROWSER_SPEC)"
-( cd "$PROFILE_DIR" && npm install --no-audit --no-fund \
-    --legacy-peer-deps --cache "$DSH_PREFIX/npm-cache" --loglevel=error "$BROWSER_SPEC" ) \
+( cd "$PROFILE_DIR" && pnpm --config.store-dir="$npm_config_store_dir" \
+    add --ignore-scripts "$BROWSER_SPEC" >/dev/null ) \
   || fail "browser bundle install failed"
 
 # 0.2.0 gates profile bundles on their declared peer ranges and SKIPS an
