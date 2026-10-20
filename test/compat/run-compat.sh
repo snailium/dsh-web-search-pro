@@ -67,21 +67,34 @@ mkdir -p "$COMPAT_HOME" "$PROFILE_DIR"
 # or read-only pnpm store would then fail the install for reasons unrelated to
 # compatibility. Pack the checkout instead: a tarball dependency runs no prepare
 # hook, which also mirrors how the plugin actually ships.
-step "building and packing the plugin"
-( cd "$PLUGIN_DIR" && npm run build >/dev/null 2>&1 \
-    || pnpm --config.store-dir="$npm_config_store_dir" run build >/dev/null 2>&1 ) \
-  || fail "plugin build failed"
-[[ -f "$PLUGIN_DIR/lib/index.js" ]] || fail "plugin build produced no lib/index.js"
-
 PLUGIN_TGZ="$DSH_PREFIX/dsh-web-search-pro-compat.tgz"
-tar --transform 's,^,package/,' -czf "$PLUGIN_TGZ" -C "$PLUGIN_DIR" \
-  package.json README.md LOGIN.md LICENSE cordis.patch.yml lib scripts \
-  || fail "could not pack the plugin"
+# PLUGIN_TARBALL lets a run test an already-built tarball -- the artifact that
+# actually ships -- instead of packing the working tree. When it is given the
+# build and pack steps are skipped, but the peer check still runs against the
+# tarball's own manifest, so a stale range in a shipped artifact is still
+# caught.
+if [[ -n "${PLUGIN_TARBALL:-}" ]]; then
+  step "using the given plugin tarball ($PLUGIN_TARBALL)"
+  [[ -f "$PLUGIN_TARBALL" ]] || fail "PLUGIN_TARBALL does not exist: $PLUGIN_TARBALL"
+  cp "$PLUGIN_TARBALL" "$PLUGIN_TGZ"
+  tar -xzOf "$PLUGIN_TGZ" package/package.json > "$DSH_PREFIX/plugin-package.json" \
+    || fail "could not read package.json out of $PLUGIN_TARBALL"
+else
+  step "building and packing the plugin"
+  ( cd "$PLUGIN_DIR" && npm run build >/dev/null 2>&1 \
+      || pnpm --config.store-dir="$npm_config_store_dir" run build >/dev/null 2>&1 ) \
+    || fail "plugin build failed"
+  [[ -f "$PLUGIN_DIR/lib/index.js" ]] || fail "plugin build produced no lib/index.js"
+  tar --transform 's,^,package/,' -czf "$PLUGIN_TGZ" -C "$PLUGIN_DIR" \
+    package.json README.md LOGIN.md LICENSE cordis.patch.yml lib scripts \
+    || fail "could not pack the plugin"
+  cp "$PLUGIN_DIR/package.json" "$DSH_PREFIX/plugin-package.json"
+fi
 
 step "asserting peer ranges resolve under dsh's runtime gate"
 node "$HERE/check-peer-ranges.js" \
   "$DSH_PREFIX/node_modules/semver" \
-  "$PLUGIN_DIR/package.json" \
+  "$DSH_PREFIX/plugin-package.json" \
   "$("$DSH_BIN" --version 2>/dev/null | tail -1)" \
   || fail "peer ranges are not installable on this dsh version"
 
